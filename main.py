@@ -6,6 +6,8 @@ from pygame.locals import *
 
 from bricks import BrickHandler
 
+from ball import BallManager
+
 pygame.init()
 
 
@@ -45,8 +47,21 @@ BManager = BrickHandler(BRICK_STARTHIGHT,BRICK_WIDTH,BRICK_HEIGHT,BRICK_HSPACING
 bricks = BManager.spawnNew(score,bricks)
 
 #floor recangle
-FLOOR_HIGHT = 180
+FLOOR_HIGHT = 130
 floor = Rect(0,Screen_hight-FLOOR_HIGHT,Screen_Width,500)
+
+
+#ballz
+BALLSTARTX = 200
+BALLSIZE = 7
+BALLSTARTY = Screen_hight-FLOOR_HIGHT-BALLSIZE
+START_BALL_EXISTS = True
+
+BallM = BallManager(BALLSTARTX,BALLSTARTY,FLOOR_HIGHT,BALLSIZE)
+
+BALLS_SENT = False
+WAITING_FOR_BALLS = False
+
 
 #hide mouse
 pygame.mouse.set_visible(False)
@@ -81,26 +96,31 @@ while True:
     #make new bricks
 
     # ***TEMP*** on right click to make bricks
-    if pygame.mouse.get_pressed()[0] == True:
+    if pygame.mouse.get_pressed()[0] == True and inPlay:
         bricks = BManager.spawnNew(score,bricks)
         print(BManager.brickLocations)
+        score += 1
 
 
     #Draw the bricks
     BManager.drawBricks(screen,bricks)
     
     #ball
+    if START_BALL_EXISTS:
+        BallM.drawStartingBall(screen)
+    if not BALLS_SENT and pygame.mouse.get_pressed()[0] and not WAITING_FOR_BALLS:
+        pass
     
 
     #game ends if there are 7 layers of bricks
-    if len(BManager.brickLocations) >= 7:
+    if len(BManager.brickLocations) >= 8:
         inPlay = False
         #display final score 
 
 
-    score =+ 1
+    
     #mouse location
-    pygame.draw.circle(screen,RED,pygame.mouse.get_pos(),2)
+    pygame.draw.circle(screen,RED,pygame.mouse.get_pos(),4)
 
     #draw to screen and tick
     pygame.display.flip()
