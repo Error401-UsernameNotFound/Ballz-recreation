@@ -33,6 +33,7 @@ class BallManager:
         self.BallStartY = StartY
         self.LowerLim = FloorHight
         self.BallSize = BallSize
+        self.Sending = False
         self.ActiveBallz = []
     def drawStartingBall(self,surface):
         pygame.draw.circle(surface,(255,255,255),(self.BallStartX,self.BallStartY),self.BallSize)
@@ -40,12 +41,25 @@ class BallManager:
         self.ActiveBallz = [] 
     def getStartVelocity(self,PixlsPerTick):
         mpos = pygame.mouse.get_pos() #direction to go
-        Sx = math.pow(mpos[0]-self.BallStartX,2)
-        Sy = math.pow(mpos[1]-self.BallStartY,2)
+        #CHANGE SOON
+        Sx = math.pow(mpos[0]-self.BallStartX,1)
+        Sy = math.pow(mpos[1]-self.BallStartY,1)
         h = math.sqrt(Sx+Sy)
-        Gx = math.acos(Sx/h)*PixlsPerTick
-        Gy = math.asin(Sy/h)*PixlsPerTick
+        Gx = math.acos((Sx/h))*PixlsPerTick
+        Gy = math.asin((Sy/h))*PixlsPerTick
         return (Gx,Gy)
+    def sendBallz(self,ballzCount,startX,StartY,clock,Vel:tuple,ballz:list):
+        clockSpeed = 20 #number of ticks untill send next ball
+        count = 0
+        if clock%clockSpeed == 0:
+            self.Sending = True
+            ballz.append(Ball(Vel[0],Vel[1],startX,StartY))
+            count += 1
+
+        if count >= ballzCount:
+            self.Sending = False
+        
+        return ballz
 
         
 

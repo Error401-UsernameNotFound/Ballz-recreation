@@ -29,7 +29,7 @@ RED = (255,0,0)
 
 # Set up the game variables
 score = 1
-
+level = 1
 
 # Set up the brick size and spacing
 BRICK_WIDTH = 45
@@ -56,12 +56,17 @@ BALLSTARTX = 200
 BALLSIZE = 7
 BALLSTARTY = Screen_hight-FLOOR_HIGHT-BALLSIZE
 START_BALL_EXISTS = True
+BALLSPEED = 5
+BALL_VELOCITY:tuple
+
+BALL_CLOCK = 0
+BALLZ = []
+BALLX = BALLSTARTX + 0 #seperate variables
 
 BallM = BallManager(BALLSTARTX,BALLSTARTY,FLOOR_HIGHT,BALLSIZE)
 
 BALLS_SENT = False
 WAITING_FOR_BALLS = False
-
 
 #hide mouse
 pygame.mouse.set_visible(False)
@@ -87,7 +92,7 @@ while True:
     pygame.draw.rect(screen,(0,0,0),floor)
     
     # Draw the score
-    score_text = font.render(f'Score: {score}', True, WHITE)
+    score_text = font.render(f'Score: {level}', True, WHITE)
     screen.blit(score_text, (150, 600))
     
     # Draw the game objects
@@ -99,7 +104,7 @@ while True:
     if pygame.mouse.get_pressed()[0] == True and inPlay:
         bricks = BManager.spawnNew(score,bricks)
         print(BManager.brickLocations)
-        score += 1
+        level += 1
 
 
     #Draw the bricks
@@ -109,8 +114,18 @@ while True:
     if START_BALL_EXISTS:
         BallM.drawStartingBall(screen)
     if not BALLS_SENT and pygame.mouse.get_pressed()[0] and not WAITING_FOR_BALLS:
-        pass
-    
+        #activates on mouse press
+        BALLS_SENT = True
+        BALL_VELOCITY = BallM.getStartVelocity(BALLSPEED)
+        #reset clock
+        BALL_CLOCK = 0
+    elif BALLS_SENT:
+        #increse clock
+        BALL_CLOCK += 1
+        BALLZ = BallM.sendBallz(score,BALLX,BALLSTARTY,BALL_CLOCK,BALL_VELOCITY,BALLZ)
+        print(BALLZ)
+        
+        
 
     #game ends if there are 7 layers of bricks
     if len(BManager.brickLocations) >= 8:
