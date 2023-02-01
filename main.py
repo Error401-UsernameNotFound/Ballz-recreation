@@ -26,6 +26,7 @@ clock = pygame.time.Clock()
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 RED = (255,0,0)
+PURPLE = (255,0,255)
 
 # Set up the game variables
 score = 1
@@ -35,9 +36,10 @@ level = 1
 BRICK_WIDTH = 45
 BRICK_HEIGHT = 45
 BRICK_HSPACING = 12
-BRICK_VSPACING = 10
+BRICK_VSPACING = 10.5
 BRICK_STARTHIGHT = 10
 BRICK_OFFSET = 7
+numbSent = 0
 
 # Set up the bricks
 bricks = []
@@ -56,17 +58,18 @@ BALLSTARTX = 200
 BALLSIZE = 7
 BALLSTARTY = Screen_hight-FLOOR_HIGHT-BALLSIZE
 START_BALL_EXISTS = True
-BALLSPEED = 5
+BALLSPEED = 10
 BALL_VELOCITY:tuple
+START_UPDATED:bool
 
 BALL_CLOCK = 0
-BALLZ = []
-BALLX = BALLSTARTX + 0 #seperate variables
+BALLZ = [] 
 
 BallM = BallManager(BALLSTARTX,BALLSTARTY,FLOOR_HIGHT,BALLSIZE)
 
 BALLS_SENT = False
 WAITING_FOR_BALLS = False
+MAKENEWBRICKS = False
 
 #hide mouse
 pygame.mouse.set_visible(False)
@@ -74,8 +77,20 @@ pygame.mouse.set_visible(False)
 #in play checks
 inPlay = True
 
+
+
+#calculate line constents
+XStartCords = []
+for x in range(1,10):
+    XStartCords.append(x*(400/7))
+YStartCords = []
+for y in range(1,10):
+    YStartCords.append((y*(445/8))-51)
+
+
+
 # Main game loop
-while True:
+while inPlay:
     # Handle events
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -83,7 +98,6 @@ while True:
             sys.exit()
     
     # Update game state
-    # (Update the game variables and objects here)
     
     # Draw the screen
     screen.fill((100,100,100))
@@ -94,18 +108,6 @@ while True:
     # Draw the score
     score_text = font.render(f'Score: {level}', True, WHITE)
     screen.blit(score_text, (150, 600))
-    
-    # Draw the game objects
-    # (Draw the bricks, paddle, and ball here)
-    
-    #make new bricks
-
-    # ***TEMP*** on right click to make bricks
-    if pygame.mouse.get_pressed()[0] == True and inPlay:
-        bricks = BManager.spawnNew(score,bricks)
-        print(BManager.brickLocations)
-        level += 1
-
 
     #Draw the bricks
     BManager.drawBricks(screen,bricks)
@@ -116,19 +118,61 @@ while True:
     if not BALLS_SENT and pygame.mouse.get_pressed()[0] and not WAITING_FOR_BALLS:
         #activates on mouse press
         BALLS_SENT = True
-        BALL_VELOCITY = BallM.getStartVelocity(BALLSPEED)
-        #reset clock
+        BALL_VELOCITY = BallM.getStartVelocity(BALLSPEED) 
+        #reset state
         BALL_CLOCK = 0
+        numbSent = 0
+        START_UPDATED = False
     elif BALLS_SENT:
         #increse clock
-        BALL_CLOCK += 1
-        BALLZ = BallM.sendBallz(score,BALLX,BALLSTARTY,BALL_CLOCK,BALL_VELOCITY,BALLZ)
-        print(BALLZ)
+        if numbSent < score:
+            BALLZ = BallM.sendBallz(score,BALLSTARTX,BALLSTARTY,BALL_CLOCK,BALL_VELOCITY,BALLZ)
+            if len(BALLZ) > 0:
+                BALLZ, bricks = BallM.ballUpdate(BALLZ,(Screen_Width,Screen_hight),bricks,BManager)
+                BallM.drawBallz(screen,BALLZ)
+            BALL_CLOCK += 1
+            numbSent += 1
+        else:
+            #done sending now we wait for balz to come back down
+            BALLS_SENT = False
+            WAITING_FOR_BALLS = True
+            START_BALL_EXISTS = False
+    elif WAITING_FOR_BALLS:
+        BALLZ, bricks = BallM.ballUpdate(BALLZ,(Screen_Width,Screen_hight),bricks,BManager)
+        BallM.drawBallz(screen,BALLZ)
+        for i in BALLZ:
+            if i.Y >= Screen_hight-FLOOR_HIGHT:
+                if not START_UPDATED:
+                    START_UPDATED = True
+                    BALLSTARTX = i.X if  i.X < Screen_Width-(BALLSIZE+3) else Screen_Width-(BALLSIZE+3) #this solves the right side thing
+
+                    #solve left side thing
+                    BALLSTARTX = BALLSTARTX if i.X > (BALLSIZE+3) else (BALLSIZE+1)
+
+                    BallM.BallStartX = BALLSTARTX
+
+                BALLZ.remove(i)
+        if len(BALLZ) == 0:
+            WAITING_FOR_BALLS = False
+            START_BALL_EXISTS = True
+            MAKENEWBRICKS = True
+    elif MAKENEWBRICKS:
+        #make new bricks
+        MAKENEWBRICKS = False
+        level += 1
+        bricks = BManager.spawnNew(level,bricks)
+        for i in BManager.brickLocations.copy():
+            if i == []:
+                BManager.brickLocations.remove(i)
+    
+    
+
         
         
 
-    #game ends if there are 7 layers of bricks
+    #game ends if there are 8 layers of bricks
     if len(BManager.brickLocations) >= 8:
+        print(BManager.brickLocations)
         inPlay = False
         #display final score 
 
@@ -140,3 +184,4 @@ while True:
     #draw to screen and tick
     pygame.display.flip()
     clock.tick(60)
+pygame.quit()

@@ -35,8 +35,9 @@ class BrickHandler:
         for loc in locations:
             #number is the position relitive to the number of spaces
             #position is the center
-            x = loc*(self.width + self.HSpacing) +self.HOffset
+            x = loc*(self.width + self.HSpacing) + self.HOffset
             y = self.hight + self.VSpacing + self.startHight
+            m = 2 if randint(1,5) == 1 else 1
             new.append(Brick(x,y,level,self.width,self.hight,self.HSpacing))
 
         #move all other bricks down
@@ -56,6 +57,7 @@ class BrickHandler:
     
     def damage(self,bricks:list,brickID,locX,locY):
         bricks[brickID].hitpoints -= 1
+        bricks[brickID].updateColor()
         if bricks[brickID].hitpoints <= 0:
             bricks.pop(brickID)
 
@@ -64,7 +66,29 @@ class BrickHandler:
                 self.brickLocations[locY].pop(locX)
             else:
                 self.brickLocations.pop(locY)
+        
         return bricks
+    
+    def findID(self,bricks,blocX,blocY):
+        id = -1
+        c = 0
+        for i in range(len(self.brickLocations)):
+            for b in range(len(self.brickLocations[i])):
+                scanedBrick = bricks[c]
+                BX = int((scanedBrick.x)/(400/7)) #ten to put it in a the box. i think thats the problem
+                BY = int((scanedBrick.y+51)/(445/8)) #51 is there because of offset
+                if BX == blocX and BY == blocY:
+                    #found the block in the position
+                    id = c
+                    #exit
+                    return (id,b,i)
+                else:#not found
+                    c += 1
+        return (id,0,0) #gona be -1
+                
+
+                
+            
 
 
 
@@ -84,13 +108,16 @@ class Brick:
         self.x = x
         self.y = y
         self.hitpoints = hitpoints
-        self.updateColor(hitpoints)
+        self.updateColor()
 
         self.BRICK_WIDTH = width
         self.BRICK_HEIGHT = hight
         self.BRICK_SPACING = spacing
+        self.right = x+width
+        self.bottom = y+hight
 
-    def updateColor(self,hp):
+    def updateColor(self):
+        hp = self.hitpoints
         if hp < 11:
             self.color = self.BRICK_COLORS[0]
         elif  hp < 30:
@@ -103,7 +130,10 @@ class Brick:
             self.color = self.BRICK_COLORS[4]
         else:
             self.color = self.BRICK_COLORS[5]
-
-
     def draw(self, surface):
         pygame.draw.rect(surface, self.color, (self.x, self.y, self.BRICK_WIDTH, self.BRICK_HEIGHT))
+    def collidepoint(self,x,y):
+        L = self.x
+        T = self.y
+        rec = pygame.rect.Rect(L,T,self.BRICK_WIDTH,self.BRICK_HEIGHT)
+        return rec.collidepoint(x,y)
