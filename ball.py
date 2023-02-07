@@ -60,7 +60,7 @@ class BallManager:
             self.Sending = False
         
         return ballz
-    def ballUpdate(self,ballz,boarder,bricks:list,Bhandeler:bHandel):
+    def ballUpdate(self,ballz,boarder,bricks:list,BallCount,NBSS,Bhandeler:bHandel):
         tballz = []
         for i in ballz:
             #calculate bounces off screen width hight
@@ -89,8 +89,10 @@ class BallManager:
                 i.VelX, i.VelY = self.bounce(dx,dy,(i.VelX, i.VelY))
             i.nextPositition()
             tballz.append(i)
+            #check nbs
+            NBSS, BallCount = Bhandeler.collectNBS(NBSS,(i.X,i.Y),BallCount)
 
-        return tballz , bricks
+        return tballz , bricks, BallCount, NBSS
     def drawBallz(self,surface,ballz):
         for i in ballz:
             pygame.draw.circle(surface,(255,255,255),(i.X,i.Y),self.BallSize)
@@ -103,7 +105,7 @@ class BallManager:
         else:
             if (dy > 0 and v[1] < 0) or (dy < 0 and v[1] > 0):
                 v.reflect_ip(pygame.math.Vector2(0, 1))
-        return v.x, v.y
+        return v.x, v.y 
 
 
 

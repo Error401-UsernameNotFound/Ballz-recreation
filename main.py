@@ -29,8 +29,11 @@ RED = (255,0,0)
 PURPLE = (255,0,255)
 
 # Set up the game variables
-score = 1
+score = 1 #ball count
 level = 1
+
+#NBS
+NBSS = []
 
 # Set up the brick size and spacing
 BRICK_WIDTH = 45
@@ -46,7 +49,7 @@ bricks = []
 BManager = BrickHandler(BRICK_STARTHIGHT,BRICK_WIDTH,BRICK_HEIGHT,BRICK_HSPACING,BRICK_VSPACING,BRICK_OFFSET)
 
 #temp add bricks location
-bricks = BManager.spawnNew(score,bricks)
+bricks,NBSS = BManager.spawnNew(score,bricks,NBSS)
 
 #floor recangle
 FLOOR_HIGHT = 130
@@ -110,7 +113,7 @@ while inPlay:
     screen.blit(score_text, (150, 600))
 
     #Draw the bricks
-    BManager.drawBricks(screen,bricks)
+    BManager.drawBricks(screen,bricks,NBSS)
     
     #ball
     if START_BALL_EXISTS:
@@ -128,7 +131,7 @@ while inPlay:
         if numbSent < score:
             BALLZ = BallM.sendBallz(score,BALLSTARTX,BALLSTARTY,BALL_CLOCK,BALL_VELOCITY,BALLZ)
             if len(BALLZ) > 0:
-                BALLZ, bricks = BallM.ballUpdate(BALLZ,(Screen_Width,Screen_hight),bricks,BManager)
+                BALLZ, bricks, BallCount, NBSS = BallM.ballUpdate(BALLZ,(Screen_Width,Screen_hight),bricks,score,NBSS,BManager)
                 BallM.drawBallz(screen,BALLZ)
             BALL_CLOCK += 1
             numbSent += 1
@@ -138,7 +141,7 @@ while inPlay:
             WAITING_FOR_BALLS = True
             START_BALL_EXISTS = False
     elif WAITING_FOR_BALLS:
-        BALLZ, bricks = BallM.ballUpdate(BALLZ,(Screen_Width,Screen_hight),bricks,BManager)
+        BALLZ, bricks, BallCount,NBSS = BallM.ballUpdate(BALLZ,(Screen_Width,Screen_hight),bricks,score,NBSS,BManager)
         BallM.drawBallz(screen,BALLZ)
         for i in BALLZ:
             if i.Y >= Screen_hight-FLOOR_HIGHT:
@@ -160,7 +163,7 @@ while inPlay:
         #make new bricks
         MAKENEWBRICKS = False
         level += 1
-        bricks = BManager.spawnNew(level,bricks)
+        bricks, NBSS = BManager.spawnNew(level,bricks,NBSS)
         for i in BManager.brickLocations.copy():
             if i == []:
                 BManager.brickLocations.remove(i)
