@@ -1,11 +1,10 @@
-#Goal use pygame to make a recreation of the ballz mobilegameimport sys
-
 import sys
 import pygame
 from pygame.locals import *
 
-from bricks import BrickHandler
+from enum import Enum
 
+from bricks import BrickHandler
 from ball import BallManager
 
 pygame.init()
@@ -74,22 +73,13 @@ BALLS_SENT = False
 WAITING_FOR_BALLS = False
 MAKENEWBRICKS = False
 
+BallCount = 0
+
 #hide mouse
 pygame.mouse.set_visible(False)
 
 #in play checks
 inPlay = True
-
-
-
-#calculate line constents
-XStartCords = []
-for x in range(1,10):
-    XStartCords.append(x*(400/7))
-YStartCords = []
-for y in range(1,10):
-    YStartCords.append((y*(445/8))-51)
-
 
 
 # Main game loop
@@ -128,8 +118,8 @@ while inPlay:
         START_UPDATED = False
     elif BALLS_SENT:
         #increse clock
-        if numbSent < score:
-            BALLZ = BallM.sendBallz(score,BALLSTARTX,BALLSTARTY,BALL_CLOCK,BALL_VELOCITY,BALLZ)
+        if numbSent < BallCount:
+            BALLZ = BallM.sendBallz(BallCount,BALLSTARTX,BALLSTARTY,BALL_CLOCK,BALL_VELOCITY,BALLZ)
             if len(BALLZ) > 0:
                 BALLZ, bricks, BallCount, NBSS = BallM.ballUpdate(BALLZ,(Screen_Width,Screen_hight),bricks,score,NBSS,BManager)
                 BallM.drawBallz(screen,BALLZ)

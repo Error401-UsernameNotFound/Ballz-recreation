@@ -2,16 +2,7 @@ import pygame
 from pygame.locals import *
 from random import randint
 
-class NBS:
-    def __init__(self,size,X,Y):
-        self.size = size
-        self.positionX = X + 22
-        self.positionY = Y + 22
-        self.WHITE = (255,255,255)
-    def draw(self,screen):
-        pygame.draw.circle(screen,self.WHITE,(self.positionX,self.positionY),self.size) #back circle
-        pygame.draw.circle(screen,(100,100,100),(self.positionX,self.positionY),self.size-5) #"see through" part
-        pygame.draw.circle(screen,self.WHITE,(self.positionX,self.positionY),self.size-10) #front circle
+
 
 class BrickHandler:
     def __init__(self,startHight,width,hight,HSpacing,VSpacing,HOffset):
@@ -52,18 +43,13 @@ class BrickHandler:
         for i in bricks:
             i.y += (self.VSpacing + self.hight)
         
-        #NBS
         #move NBS DOWN
         for i in NBSS:
             i.positionY += (self.VSpacing + self.hight)
         #pick a removed location and add the NBS there
         rX = (rLoc[randint(0,len(rLoc)-1)])*(self.width + self.HSpacing) + self.HOffset
         rY = self.hight + self.VSpacing + self.startHight
-        
         NBSS.append(NBS(15,rX,rY))
-
-
-
         #add new bricks
         for i in new:
             bricks.append(i)
@@ -83,13 +69,10 @@ class BrickHandler:
         bricks[brickID].updateColor()
         if bricks[brickID].hitpoints <= 0:
             bricks.pop(brickID)
-
-            #locy is higher the farther down it is
             if len(self.brickLocations[locY]) > 1:
                 self.brickLocations[locY].pop(locX)
             else:
                 self.brickLocations.pop(locY)
-        
         return bricks
 
     def collectNBS(self,NBSS:list,bCords:tuple,ballCount):
@@ -123,21 +106,11 @@ class BrickHandler:
 
 
 class Brick:
-    # Set up the brick colors
-
-    BRICK_COLORS = [
-        (255, 0, 0), #1-10
-        (0, 255, 0), #11-30
-        (0, 0, 255), #31-50
-        (255, 255, 0), #51-70
-        (255, 0, 255), #71-90
-        (0, 255, 255) #90->infinity
-    ]
-
     def __init__(self, x, y, hitpoints,width,hight,spacing):
         self.x = x
         self.y = y
         self.hitpoints = hitpoints
+        self.color = (255,0,0)
         self.updateColor()
 
         self.BRICK_WIDTH = width
@@ -147,21 +120,18 @@ class Brick:
         self.bottom = y+hight
 
     def updateColor(self):
-        hp = self.hitpoints
-        if hp < 11:
-            self.color = self.BRICK_COLORS[0]
-        elif  hp < 30:
-            self.color = self.BRICK_COLORS[1]
-        elif  hp < 50:
-            self.color = self.BRICK_COLORS[2]
-        elif  hp < 70:
-            self.color = self.BRICK_COLORS[3]
-        elif  hp < 90:
-            self.color = self.BRICK_COLORS[4]
-        else:
-            self.color = self.BRICK_COLORS[5]
+        hp = self.hitpoints%60 +1 #reset every 60s
+        mP = (hp%20)*(20/255) #multiplyer
+        if hp < 21:
+            self.color = (255-mP,0+mP,0)
+        elif hp < 41:
+            self.color = (0,255-mP,0+mP)
+        elif hp < 61:
+            self.color = (0+mP,0,255-mP)
+    
     def draw(self, surface):
         pygame.draw.rect(surface, self.color, (self.x, self.y, self.BRICK_WIDTH, self.BRICK_HEIGHT))
+    
     def collidepoint(self,x,y):
         L = self.x
         T = self.y
@@ -169,5 +139,14 @@ class Brick:
         return rec.collidepoint(x,y)
 
 
-
+class NBS:
+    def __init__(self,size,X,Y):
+        self.size = size
+        self.positionX = X + 22
+        self.positionY = Y + 22
+        self.WHITE = (255,255,255)
+    def draw(self,screen):
+        pygame.draw.circle(screen,self.WHITE,(self.positionX,self.positionY),self.size) #back circle
+        pygame.draw.circle(screen,(100,100,100),(self.positionX,self.positionY),self.size-5) #"see through" part
+        pygame.draw.circle(screen,self.WHITE,(self.positionX,self.positionY),self.size-10) #front circle
 

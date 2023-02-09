@@ -2,7 +2,6 @@ import pygame
 from pygame.locals import *
 import math
 from bricks import BrickHandler as bHandel
-#controls the ball and its nonsence
 
 #short lived. very stupid
 class Ball:
@@ -20,9 +19,9 @@ class Ball:
         self.VelX = newX
         self.VelY = newY
     def nextPositition(self):
-        #calculate next pos
-        self.X = (self.X+self.VelX)
-        self.Y = (self.Y+self.VelY)
+        #calculate next pos and return it
+        return ((self.X+self.VelX),(self.Y+self.VelY))
+
         
     
 
@@ -36,10 +35,13 @@ class BallManager:
         self.BallSize = BallSize
         self.Sending = False
         self.ActiveBallz = []
+    
     def drawStartingBall(self,surface):
         pygame.draw.circle(surface,(255,255,255),(self.BallStartX,self.BallStartY),self.BallSize)
+    
     def resetBallz(self): #might not be used
         self.ActiveBallz = [] 
+    
     def getStartVelocity(self,PixlsPerTick):
         mpos = pygame.mouse.get_pos() #direction to go
         Sx = (mpos[0]-self.BallStartX) #VX
@@ -48,6 +50,7 @@ class BallManager:
         Gx = (Sx/h)*PixlsPerTick
         Gy = (Sy/h)*PixlsPerTick
         return (Gx,Gy)
+    
     def sendBallz(self,ballzCount,startX,StartY,clock,Vel:tuple,ballz:list):
         clockSpeed = 20 #number of ticks untill send next ball
         count = 0
@@ -60,6 +63,8 @@ class BallManager:
             self.Sending = False
         
         return ballz
+    
+
     def ballUpdate(self,ballz,boarder,bricks:list,BallCount,NBSS,Bhandeler:bHandel):
         tballz = []
         for i in ballz:
@@ -87,16 +92,19 @@ class BallManager:
                 dx = i.X - (((brick.x - brick.right)/2) + brick.x)
                 dy = i.Y - (((brick.y - brick.bottom)/2) + brick.y)
                 i.VelX, i.VelY = self.bounce(dx,dy,(i.VelX, i.VelY))
-            i.nextPositition()
+            i.move()
             tballz.append(i)
             #check nbs
             NBSS, BallCount = Bhandeler.collectNBS(NBSS,(i.X,i.Y),BallCount)
 
         return tballz , bricks, BallCount, NBSS
+    
+
     def drawBallz(self,surface,ballz):
         for i in ballz:
             pygame.draw.circle(surface,(255,255,255),(i.X,i.Y),self.BallSize)
     
+
     def bounce(self,dx,dy,ballV:tuple):
         v = pygame.math.Vector2(ballV[0], ballV[1])
         if abs(dx) > abs(dy):
@@ -106,10 +114,3 @@ class BallManager:
             if (dy > 0 and v[1] < 0) or (dy < 0 and v[1] > 0):
                 v.reflect_ip(pygame.math.Vector2(0, 1))
         return v.x, v.y 
-
-
-
-        
-
-
-    
