@@ -15,7 +15,8 @@ If you are using this repo to try and learn from it good luck. This thing was ma
     - Squares are simple. They are just a rectangle that can be drawn with pygame's draw rect function
     - Triangles are complacated. They require pygames draw polygon function whitch mean i need the exact set of points to draw them.
 - # Balls
-  - very simple. just a circle drawn with the pygame draw circle command.
+  - Very simple. just a circle drawn with the pygame draw circle command.
+  - Has a time (t) that indicates its position in the raycast.
 
 - # Mechanics
   - Movement: Every frame the ball moves a certin distence in its pre-defied tregectory. This tregectory is just a raycast reflecting arround 
