@@ -1,109 +1,69 @@
-import sys
 import pygame
+import sys
 from pygame.locals import *
-from enum import Enum
-from bricks import BrickHandler
-from ball import BallManager
+from bricks import brick
 
-pygame.init() 
+
+pygame.init()
+
+Screen_Width = 400
+Screen_hight = 625
+screen = pygame.display.set_mode((Screen_Width,Screen_hight))
+pygame.display.set_caption('Ballz')
+
+# Set up the game font
+font = pygame.font.Font(None, 36)
+
+# Set up the game clock
 clock = pygame.time.Clock()
-#constents
-class Screen(Enum):
-    Width = 400
-    Hight = 625
-class Colors(Enum):
-    Black = (0, 0, 0)
-    White = (255, 255, 255)
-    Red = (255,0,0)
-    Purple = (255,0,255),
-    Gray = (100,100,100)
-class GameCon(Enum):
-    FloorHight = 130 
 
-#Ball stuff
-class BallCon(Enum):
-    Speed = 10
-    Size = 7
-    StartY = Screen.Hight.value - GameCon.FloorHight.value
-
-BallVars = {
-    "Vel": tuple,
-    "Clock": 0,
-    "Count": 1,
-    "NumberSent": 0,
-    "StartExists": True,
-    "StartUpdated": False,
-    "Ballz": [],
-    "StartX" : 200
-}
+inPlay = True
 
 
-#Brick stuff
-class BrickCon(Enum):
-    Width = 45
-    Hight = 45
-    hSpacing = 12
-    vSpacing = 10.5
-    vOffset = 10
-    hOffset = 7
-    
 
-BrickVars = {
-    "Brickz" : [],
-    "NBSS" : []
-}
+#size
+brickSize = 50
+tri = True
+location = 3
+hp = 2
 
-#states
-States = {
-    "BallSent" : False,
-    "Waiting" : False,
-    "MakeBrick" : False,
-    "inPlay" : True,
-    "score" : 1
-}
+rotation = 0
 
-#managers
-Managers = {
-    "Ball" : BallManager(BallVars["StartX"],BallCon.StartY.value,GameCon.FloorHight.value,BallCon.Size.value),
-    "Brick" : BrickHandler(BrickCon.hOffset.value,BrickCon.Width.value,BrickCon.Hight.value,BrickCon.hSpacing.value,BrickCon.vSpacing.value,BrickCon.hOffset.value)
-}
+b = brick(brickSize,False,location,0,hp)
+b2 = brick(brickSize,tri,rotation,1,hp)
+
+# Set up the game colors
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+RED = (255,0,0)
+PURPLE = (255,0,255)
+
+#setup offsets
+startHOffset = 50
+startVOffset = 50
+HSpaceBetweenBricks = 50
+VSpaceBetweenBricks = 10
+
+b.SetPosition(startHOffset,startVOffset,HSpaceBetweenBricks,VSpaceBetweenBricks)
+b2.SetPosition(startHOffset,startVOffset,HSpaceBetweenBricks,VSpaceBetweenBricks)
 
 
-#display
-floor = Rect(0,Screen.Hight.value-GameCon.FloorHight.value,Screen.Width.value,GameCon.FloorHight.value) #big rectangle
-display = pygame.display.set_mode((Screen.Width.value,Screen.Hight.value))
-pygame.display.set_caption("Ballz")
-
-#hide mouse
-pygame.mouse.set_visible(False)
-
-
-#start bricks
-BrickVars["Brickz"], BrickVars["NBSS"] = Managers["Brick"].spawnNew(States["score"], BrickVars["Brickz"], BrickVars["NBSS"])
-#start game loop
-
-while States["inPlay"]:
+# Main game loop
+while inPlay:
     # Handle events
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
+    #resetScreen
+    screen.fill((100,100,100))
+    
+    b.draw(screen,PURPLE)
+    b2.draw(screen,RED)
 
-    #draw non moving things
-    display.fill(Colors.Gray.value)
-    pygame.draw.rect(display,Colors.Black.value,floor) 
-    scoreTXT = pygame.font.Font(None, 36).render(f'Score: {States["score"]}', True, Colors.White.value)
-    display.blit(scoreTXT, (150, 600))
-
-    #draw updating things
-    Managers["Brick"].drawBricks(display,BrickVars["Brickz"],BrickVars["NBSS"])
-
-
-
-
-
-    #mouse location
-    pygame.draw.circle(display,Colors.Red.value,pygame.mouse.get_pos(),4)
-    #draw to screen and tick
+    print(rotation)
+    b2.setRotation(rotation)
+    rotation += 1
     pygame.display.flip()
-    clock.tick(60)
+    clock.tick(5)
+pygame.quit()
